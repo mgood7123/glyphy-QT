@@ -26,13 +26,13 @@
 typedef struct demo_buffer_t demo_buffer_t;
 
 demo_buffer_t *
-demo_buffer_create (void);
+demo_buffer_create (QOpenGLFunctions * gl);
 
 demo_buffer_t *
 demo_buffer_reference (demo_buffer_t *buffer);
 
 void
-demo_buffer_destroy (demo_buffer_t *buffer);
+demo_buffer_destroy (QOpenGLFunctions * gl, demo_buffer_t *buffer);
 
 
 void

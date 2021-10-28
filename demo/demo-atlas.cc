@@ -97,9 +97,9 @@ demo_atlas_set_uniforms (QOpenGLFunctions * gl, demo_atlas_t *at)
   GLuint program;
   gl->glGetIntegerv (GL_CURRENT_PROGRAM, (GLint *) &program);
 
-  gl->glUniform4i (glGetUniformLocation (program, "u_atlas_info"),
+  gl->glUniform4i (gl->glGetUniformLocation (program, "u_atlas_info"),
 	       at->tex_w, at->tex_h, at->item_w, at->item_h_q);
-  gl->glUniform1i (glGetUniformLocation (program, "u_atlas_tex"), at->tex_unit - GL_TEXTURE0);
+  gl->glUniform1i (gl->glGetUniformLocation (program, "u_atlas_tex"), at->tex_unit - GL_TEXTURE0);
 }
 
 void

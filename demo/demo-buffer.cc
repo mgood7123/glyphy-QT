@@ -34,13 +34,13 @@ struct demo_buffer_t {
 };
 
 demo_buffer_t *
-demo_buffer_create (void)
+demo_buffer_create (QOpenGLFunctions * gl)
 {
   demo_buffer_t *buffer = (demo_buffer_t *) calloc (1, sizeof (demo_buffer_t));
   buffer->refcount = 1;
 
   buffer->vertices = new std::vector<glyph_vertex_t>;
-  glGenBuffers (1, &buffer->buf_name);
+  gl->glGenBuffers (1, &buffer->buf_name);
 
   demo_buffer_clear (buffer);
 
@@ -55,12 +55,12 @@ demo_buffer_reference (demo_buffer_t *buffer)
 }
 
 void
-demo_buffer_destroy (demo_buffer_t *buffer)
+demo_buffer_destroy (QOpenGLFunctions * gl, demo_buffer_t *buffer)
 {
   if (!buffer || --buffer->refcount)
     return;
 
-  glDeleteBuffers (1, &buffer->buf_name);
+  gl->glDeleteBuffers (1, &buffer->buf_name);
   delete buffer->vertices;
   free (buffer);
 }
