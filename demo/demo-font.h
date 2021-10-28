@@ -52,7 +52,7 @@ demo_font_t *
 demo_font_reference (demo_font_t *font);
 
 void
-demo_font_destroy (demo_font_t *font);
+demo_font_destroy (QOpenGLFunctions * gl, demo_font_t *font);
 
 
 FT_Face
@@ -63,7 +63,7 @@ demo_font_get_atlas (demo_font_t *font);
 
 
 void
-demo_font_lookup_glyph (demo_font_t  *font,
+demo_font_lookup_glyph (QOpenGLFunctions * gl, demo_font_t  *font,
 			unsigned int  glyph_index,
 			glyph_info_t *glyph_info);
 

@@ -108,7 +108,7 @@ demo_shader_add_glyph_vertices (const glyphy_point_t        &p,
 
 
 static GLuint
-compile_shader (GLenum         type,
+compile_shader (QOpenGLFunctions * gl, GLenum         type,
 		GLsizei        count,
 		const GLchar** sources)
 {
@@ -117,25 +117,29 @@ compile_shader (GLenum         type,
   GLuint shader;
   GLint compiled;
 
-  if (!(shader = glCreateShader (type)))
+  if (!(shader = gl->glCreateShader (type)))
     return shader;
 
-  glShaderSource (shader, count, sources, 0);
-  glCompileShader (shader);
+  gl->glShaderSource (shader, count, sources, 0);
+  gl->glCompileShader (shader);
 
-  glGetShaderiv (shader, GL_COMPILE_STATUS, &compiled);
+  gl->glGetShaderiv (shader, GL_COMPILE_STATUS, &compiled);
   if (!compiled) {
     GLint info_len = 0;
     LOGW ("%s shader failed to compile\n",
 	     type == GL_VERTEX_SHADER ? "Vertex" : "Fragment");
-    glGetShaderiv (shader, GL_INFO_LOG_LENGTH, &info_len);
+    gl->glGetShaderiv (shader, GL_INFO_LOG_LENGTH, &info_len);
 
     if (info_len > 0) {
       char *info_log = (char*) malloc (info_len);
-      glGetShaderInfoLog (shader, info_len, NULL, info_log);
+      gl->glGetShaderInfoLog (shader, info_len, NULL, info_log);
 
       LOGW ("%s\n", info_log);
       free (info_log);
+    }
+    for (GLsizei i = 0; i < count; i++) {
+        LOGW ("%s shader source %i:\n%s\n",
+         type == GL_VERTEX_SHADER ? "Vertex" : "Fragment", i, sources[i]);
     }
 
     abort ();
@@ -145,7 +149,7 @@ compile_shader (GLenum         type,
 }
 
 static GLuint
-link_program (GLuint vshader,
+link_program (QOpenGLFunctions * gl, GLuint vshader,
 	      GLuint fshader)
 {
   TRACE();
@@ -153,22 +157,22 @@ link_program (GLuint vshader,
   GLuint program;
   GLint linked;
 
-  program = glCreateProgram ();
-  glAttachShader (program, vshader);
-  glAttachShader (program, fshader);
-  glLinkProgram (program);
-  glDeleteShader (vshader);
-  glDeleteShader (fshader);
+  program = gl->glCreateProgram ();
+  gl->glAttachShader (program, vshader);
+  gl->glAttachShader (program, fshader);
+  gl->glLinkProgram (program);
+  gl->glDeleteShader (vshader);
+  gl->glDeleteShader (fshader);
 
-  glGetProgramiv (program, GL_LINK_STATUS, &linked);
+  gl->glGetProgramiv (program, GL_LINK_STATUS, &linked);
   if (!linked) {
     GLint info_len = 0;
     LOGW ("Program failed to link\n");
-    glGetProgramiv (program, GL_INFO_LOG_LENGTH, &info_len);
+    gl->glGetProgramiv (program, GL_INFO_LOG_LENGTH, &info_len);
 
     if (info_len > 0) {
       char *info_log = (char*) malloc (info_len);
-      glGetProgramInfoLog (program, info_len, NULL, info_log);
+      gl->glGetProgramInfoLog (program, info_len, NULL, info_log);
 
       LOGW ("%s\n", info_log);
       free (info_log);
@@ -180,33 +184,28 @@ link_program (GLuint vshader,
   return program;
 }
 
-#ifdef GL_ES_VERSION_2_0
 # define GLSL_HEADER_STRING \
-  "#extension GL_OES_standard_derivatives : enable\n" \
+  "#version 330 core\n" \
   "precision highp float;\n" \
   "precision highp int;\n"
-#else
-# define GLSL_HEADER_STRING \
-  "#version 110\n"
-#endif
 
 GLuint
-demo_shader_create_program (void)
+demo_shader_create_program (QOpenGLFunctions * gl)
 {
   TRACE();
 
   GLuint vshader, fshader, program;
   const GLchar *vshader_sources[] = {GLSL_HEADER_STRING,
 				     demo_vshader_glsl};
-  vshader = compile_shader (GL_VERTEX_SHADER, ARRAY_LEN (vshader_sources), vshader_sources);
+  vshader = compile_shader (gl, GL_VERTEX_SHADER, ARRAY_LEN (vshader_sources), vshader_sources);
   const GLchar *fshader_sources[] = {GLSL_HEADER_STRING,
 				     demo_atlas_glsl,
 				     glyphy_common_shader_source (),
 				     "#define GLYPHY_SDF_PSEUDO_DISTANCE 1\n",
 				     glyphy_sdf_shader_source (),
 				     demo_fshader_glsl};
-  fshader = compile_shader (GL_FRAGMENT_SHADER, ARRAY_LEN (fshader_sources), fshader_sources);
+  fshader = compile_shader (gl, GL_FRAGMENT_SHADER, ARRAY_LEN (fshader_sources), fshader_sources);
 
-  program = link_program (vshader, fshader);
+  program = link_program (gl, vshader, fshader);
   return program;
 }

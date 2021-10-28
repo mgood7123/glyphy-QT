@@ -27,7 +27,7 @@
  */
 
 /* TODO path separator */
-#define SHADER_PATH(File) PKGDATADIR "/" File
+#define SHADER_PATH(File) "/" File
 
 #include "glyphy-common-glsl.h"
 #include "glyphy-sdf-glsl.h"

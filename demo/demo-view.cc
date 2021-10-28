@@ -125,15 +125,15 @@ demo_view_reset (demo_view_t *vu)
 
 
 static void
-demo_view_scale_gamma_adjust (demo_view_t *vu, double factor)
+demo_view_scale_gamma_adjust (QOpenGLFunctions * gl, demo_view_t *vu, double factor)
 {
-  demo_glstate_scale_gamma_adjust (vu->st, factor);
+  demo_glstate_scale_gamma_adjust (gl, vu->st, factor);
 }
 
 static void
-demo_view_scale_contrast (demo_view_t *vu, double factor)
+demo_view_scale_contrast (QOpenGLFunctions * gl, demo_view_t *vu, double factor)
 {
-  demo_glstate_scale_contrast (vu->st, factor);
+  demo_glstate_scale_contrast (gl, vu->st, factor);
 }
 
 static void
@@ -143,22 +143,22 @@ demo_view_scale_perspective (demo_view_t *vu, double factor)
 }
 
 static void
-demo_view_toggle_outline (demo_view_t *vu)
+demo_view_toggle_outline (QOpenGLFunctions * gl, demo_view_t *vu)
 {
-  demo_glstate_toggle_outline (vu->st);
+  demo_glstate_toggle_outline (gl, vu->st);
 }
 
 static void
-demo_view_scale_outline_thickness (demo_view_t *vu, double factor)
+demo_view_scale_outline_thickness (QOpenGLFunctions * gl, demo_view_t *vu, double factor)
 {
-  demo_glstate_scale_outline_thickness (vu->st, factor);
+  demo_glstate_scale_outline_thickness (gl, vu->st, factor);
 }
 
 
 static void
-demo_view_adjust_boldness (demo_view_t *vu, double factor)
+demo_view_adjust_boldness (QOpenGLFunctions * gl, demo_view_t *vu, double factor)
 {
-  demo_glstate_adjust_boldness (vu->st, factor);
+  demo_glstate_adjust_boldness (gl, vu->st, factor);
 }
 
 
@@ -176,10 +176,10 @@ demo_view_translate (demo_view_t *vu, double dx, double dy)
 }
 
 static void
-demo_view_apply_transform (demo_view_t *vu, float *mat)
+demo_view_apply_transform (QOpenGLFunctions * gl, demo_view_t *vu, float *mat)
 {
   int viewport[4];
-  glGetIntegerv (GL_VIEWPORT, viewport);
+  gl->glGetIntegerv (GL_VIEWPORT, viewport);
   GLint width  = viewport[2];
   GLint height = viewport[3];
 
@@ -211,13 +211,13 @@ demo_view_apply_transform (demo_view_t *vu, float *mat)
 static long
 current_time (void)
 {
-  return glutGet (GLUT_ELAPSED_TIME);
+  return 0; // glutGet (GLUT_ELAPSED_TIME);
 }
 
 static void
 next_frame (demo_view_t *vu)
 {
-  glutPostRedisplay ();
+  // glutPostRedisplay ();
 }
 
 static void
@@ -225,7 +225,7 @@ timed_step (int ms)
 {
   demo_view_t *vu = static_vu;
   if (vu->animate) {
-    glutTimerFunc (ms, timed_step, ms);
+    // glutTimerFunc (ms, timed_step, ms);
     next_frame (vu);
   }
 }
@@ -233,12 +233,12 @@ timed_step (int ms)
 static void
 idle_step (void)
 {
-  demo_view_t *vu = static_vu;
-  if (vu->animate) {
-    next_frame (vu);
-  }
-  else
-    glutIdleFunc (NULL);
+//  demo_view_t *vu = static_vu;
+//  if (vu->animate) {
+//    next_frame (vu);
+//  }
+//  else
+//     glutIdleFunc (NULL);
 }
 
 static void
@@ -246,7 +246,7 @@ print_fps (int ms)
 {
   demo_view_t *vu = static_vu;
   if (vu->animate) {
-    glutTimerFunc (ms, print_fps, ms);
+    //glutTimerFunc (ms, print_fps, ms);
     long t = current_time ();
     LOGI ("%gfps\n", vu->num_frames * 1000. / (t - vu->fps_start_time));
     vu->num_frames = 0;
@@ -261,10 +261,10 @@ start_animation (demo_view_t *vu)
   vu->num_frames = 0;
   vu->last_frame_time = vu->fps_start_time = current_time ();
   //glutTimerFunc (1000/60, timed_step, 1000/60);
-  glutIdleFunc (idle_step);
+  // glutIdleFunc (idle_step);
   if (!vu->has_fps_timer) {
     vu->has_fps_timer = true;
-    glutTimerFunc (5000, print_fps, 5000);
+    // glutTimerFunc (5000, print_fps, 5000);
   }
 }
 
@@ -281,75 +281,60 @@ static void
 demo_view_toggle_vsync (demo_view_t *vu)
 {
   vu->vsync = !vu->vsync;
-  LOGI ("Setting vsync %s.\n", vu->vsync ? "on" : "off");
-#if defined(__APPLE__)
-  CGLSetParameter(CGLGetCurrentContext(), kCGLCPSwapInterval, &vu->vsync);
-#elif defined(__WGLEW__)
-  if (wglewIsSupported ("WGL_EXT_swap_control"))
-    wglSwapIntervalEXT (vu->vsync);
-  else
-    LOGW ("WGL_EXT_swal_control not supported; failed to set vsync\n");
-#elif defined(__GLXEW_H__)
-  if (glxewIsSupported ("GLX_SGI_swap_control"))
-    glXSwapIntervalSGI (vu->vsync);
-  else
-    LOGW ("GLX_SGI_swap_control not supported; failed to set vsync\n");
-#else
-    LOGW ("No vsync extension found; failed to set vsync\n");
-#endif
+  LOGI ("Setting vsync %s.", vu->vsync ? "on" : "off");
+  LOGW ("No vsync extension found; failed to set vsync");
 }
 
 static void
 demo_view_toggle_srgb (demo_view_t *vu)
 {
   vu->srgb = !vu->srgb;
-  LOGI ("Setting sRGB framebuffer %s.\n", vu->srgb ? "on" : "off");
-#if defined(GL_FRAMEBUFFER_SRGB) && defined(GL_FRAMEBUFFER_SRGB_CAPABLE_EXT)
-  GLboolean available = false;
-  if ((glewIsSupported ("GL_ARB_framebuffer_sRGB") || glewIsSupported ("GL_EXT_framebuffer_sRGB")) &&
-      (glGetBooleanv (GL_FRAMEBUFFER_SRGB_CAPABLE_EXT, &available), available)) {
-    if (vu->srgb)
-      glEnable (GL_FRAMEBUFFER_SRGB);
-    else
-      glDisable (GL_FRAMEBUFFER_SRGB);
-  } else
-#endif
-    LOGW ("No sRGB framebuffer extension found; failed to set sRGB framebuffer\n");
+  LOGI ("Setting sRGB framebuffer %s.", vu->srgb ? "on" : "off");
+//#if defined(GL_FRAMEBUFFER_SRGB) && defined(GL_FRAMEBUFFER_SRGB_CAPABLE_EXT)
+//  GLboolean available = false;
+//  if ((glGetBooleanv (GL_FRAMEBUFFER_SRGB_CAPABLE_EXT, &available), available)) {
+//    if (vu->srgb)
+//      glEnable (GL_FRAMEBUFFER_SRGB);
+//    else
+//      glDisable (GL_FRAMEBUFFER_SRGB);
+//  } else
+//#endif
+    LOGW ("No sRGB framebuffer extension found; failed to set sRGB framebuffer");
 }
 
 static void
 demo_view_toggle_fullscreen (demo_view_t *vu)
 {
-  vu->fullscreen = !vu->fullscreen;
-  if (vu->fullscreen) {
-    vu->x = glutGet (GLUT_WINDOW_X);
-    vu->y = glutGet (GLUT_WINDOW_Y);
-    vu->width  = glutGet (GLUT_WINDOW_WIDTH);
-    vu->height = glutGet (GLUT_WINDOW_HEIGHT);
-    glutFullScreen ();
-  } else {
-    glutReshapeWindow (vu->width, vu->height);
-    glutPositionWindow (vu->x, vu->y);
-  }
+//  vu->fullscreen = !vu->fullscreen;
+//  if (vu->fullscreen) {
+//    vu->x = glutGet (GLUT_WINDOW_X);
+//    vu->y = glutGet (GLUT_WINDOW_Y);
+//    vu->width  = glutGet (GLUT_WINDOW_WIDTH);
+//    vu->height = glutGet (GLUT_WINDOW_HEIGHT);
+//    glutFullScreen ();
+//  } else {
+//    glutReshapeWindow (vu->width, vu->height);
+//    glutPositionWindow (vu->x, vu->y);
+//  }
 }
 
 static void
-demo_view_toggle_debug (demo_view_t *vu)
+demo_view_toggle_debug (QOpenGLFunctions * gl, demo_view_t *vu)
 {
-  demo_glstate_toggle_debug (vu->st);
+  demo_glstate_toggle_debug (gl, vu->st);
 }
 
 
 void
-demo_view_reshape_func (demo_view_t *vu, int width, int height)
+demo_view_reshape_func (QOpenGLFunctions * gl, demo_view_t *vu, int width, int height)
 {
-  glViewport (0, 0, width, height);
-  glutPostRedisplay ();
+  gl->glViewport (0, 0, width, height);
+//  glutPostRedisplay ();
 }
 
 #define STEP 1.05
 void
-demo_view_keyboard_func (demo_view_t *vu, unsigned char key, int x, int y)
+demo_view_keyboard_func (QOpenGLFunctions * gl, demo_view_t *vu, unsigned char key, int x, int y)
 {
   switch (key)
   {
@@ -370,38 +355,38 @@ demo_view_keyboard_func (demo_view_t *vu, unsigned char key, int x, int y)
       break;
 
     case 'd':
-      demo_view_toggle_debug (vu);
+      demo_view_toggle_debug (gl, vu);
       break;
 
     case 'o':
-      demo_view_toggle_outline (vu);
+      demo_view_toggle_outline (gl, vu);
       break;
     case 'p':
-      demo_view_scale_outline_thickness (vu, STEP);
+      demo_view_scale_outline_thickness (gl, vu, STEP);
       break;
     case 'i':
-      demo_view_scale_outline_thickness (vu, 1. / STEP);
+      demo_view_scale_outline_thickness (gl, vu, 1. / STEP);
       break;
 
     case '0':
-      demo_view_adjust_boldness (vu, +.01);
+      demo_view_adjust_boldness (gl, vu, +.01);
       break;
     case '9':
-      demo_view_adjust_boldness (vu, -.01);
+      demo_view_adjust_boldness (gl, vu, -.01);
       break;
 
 
     case 'a':
-      demo_view_scale_contrast (vu, STEP);
+      demo_view_scale_contrast (gl, vu, STEP);
       break;
     case 'z':
-      demo_view_scale_contrast (vu, 1. / STEP);
+      demo_view_scale_contrast (gl, vu, 1. / STEP);
       break;
     case 'g':
-      demo_view_scale_gamma_adjust (vu, STEP);
+      demo_view_scale_gamma_adjust (gl, vu, STEP);
       break;
     case 'b':
-      demo_view_scale_gamma_adjust (vu, 1. / STEP);
+      demo_view_scale_gamma_adjust (gl, vu, 1. / STEP);
       break;
     case 'c':
       demo_view_toggle_srgb (vu);
@@ -434,7 +419,7 @@ demo_view_keyboard_func (demo_view_t *vu, unsigned char key, int x, int y)
     default:
       return;
   }
-  glutPostRedisplay ();
+//  glutPostRedisplay ();
 }
 
 void
@@ -442,156 +427,156 @@ demo_view_special_func (demo_view_t *vu, int key, int x, int y)
 {
   switch (key)
   {
-    case GLUT_KEY_UP:
-      demo_view_translate (vu, 0, -.1);
-      break;
-    case GLUT_KEY_DOWN:
-      demo_view_translate (vu, 0, +.1);
-      break;
-    case GLUT_KEY_LEFT:
-      demo_view_translate (vu, +.1, 0);
-      break;
-    case GLUT_KEY_RIGHT:
-      demo_view_translate (vu, -.1, 0);
-      break;
+//    case GLUT_KEY_UP:
+//      demo_view_translate (vu, 0, -.1);
+//      break;
+//    case GLUT_KEY_DOWN:
+//      demo_view_translate (vu, 0, +.1);
+//      break;
+//    case GLUT_KEY_LEFT:
+//      demo_view_translate (vu, +.1, 0);
+//      break;
+//    case GLUT_KEY_RIGHT:
+//      demo_view_translate (vu, -.1, 0);
+//      break;
 
     default:
       return;
   }
-  glutPostRedisplay ();
+//  glutPostRedisplay ();
 }
 
 void
 demo_view_mouse_func (demo_view_t *vu, int button, int state, int x, int y)
 {
-  if (state == GLUT_DOWN) {
-    vu->buttons |= (1 << button);
-    vu->click_handled = false;
-  } else
-    vu->buttons &= !(1 << button);
-  vu->modifiers = glutGetModifiers ();
+//  if (state == GLUT_DOWN) {
+//    vu->buttons |= (1 << button);
+//    vu->click_handled = false;
+//  } else
+//    vu->buttons &= !(1 << button);
+//  vu->modifiers = glutGetModifiers ();
 
-  switch (button)
-  {
-    case GLUT_RIGHT_BUTTON:
-      switch (state) {
-        case GLUT_DOWN:
-	  if (vu->animate) {
-	    demo_view_toggle_animation (vu);
-	    vu->click_handled = true;
-	  }
-	  break;
-        case GLUT_UP:
-	  if (!vu->animate)
-	    {
-	      if (!vu->dragged && !vu->click_handled)
-		demo_view_toggle_animation (vu);
-	      else if (vu->dt) {
-		double speed = hypot (vu->dx, vu->dy) / vu->dt;
-		if (speed > 0.1)
-		  demo_view_toggle_animation (vu);
-	      }
-	      vu->dx = vu->dy = vu->dt = 0;
-	    }
-	  break;
-      }
-      break;
+//  switch (button)
+//  {
+//    case GLUT_RIGHT_BUTTON:
+//      switch (state) {
+//        case GLUT_DOWN:
+//	  if (vu->animate) {
+//	    demo_view_toggle_animation (vu);
+//	    vu->click_handled = true;
+//	  }
+//	  break;
+//        case GLUT_UP:
+//	  if (!vu->animate)
+//	    {
+//	      if (!vu->dragged && !vu->click_handled)
+//		demo_view_toggle_animation (vu);
+//	      else if (vu->dt) {
+//		double speed = hypot (vu->dx, vu->dy) / vu->dt;
+//		if (speed > 0.1)
+//		  demo_view_toggle_animation (vu);
+//	      }
+//	      vu->dx = vu->dy = vu->dt = 0;
+//	    }
+//	  break;
+//      }
+//      break;
 
-#if !defined(GLUT_WHEEL_UP)
-#define GLUT_WHEEL_UP 3
-#define GLUT_WHEEL_DOWN 4
-#endif
+//#if !defined(GLUT_WHEEL_UP)
+//#define GLUT_WHEEL_UP 3
+//#define GLUT_WHEEL_DOWN 4
+//#endif
 
-    case GLUT_WHEEL_UP:
-      demo_view_scale (vu, STEP);
-      break;
+//    case GLUT_WHEEL_UP:
+//      demo_view_scale (vu, STEP);
+//      break;
 
-    case GLUT_WHEEL_DOWN:
-      demo_view_scale (vu, 1. / STEP);
-      break;
-  }
+//    case GLUT_WHEEL_DOWN:
+//      demo_view_scale (vu, 1. / STEP);
+//      break;
+//  }
 
-  vu->beginx = vu->lastx = x;
-  vu->beginy = vu->lasty = y;
-  vu->dragged = false;
+//  vu->beginx = vu->lastx = x;
+//  vu->beginy = vu->lasty = y;
+//  vu->dragged = false;
 
-  glutPostRedisplay ();
+//  glutPostRedisplay ();
 }
 
 void
-demo_view_motion_func (demo_view_t *vu, int x, int y)
+demo_view_motion_func (QOpenGLFunctions * gl, demo_view_t *vu, int x, int y)
 {
   vu->dragged = true;
 
   int viewport[4];
-  glGetIntegerv (GL_VIEWPORT, viewport);
+  gl->glGetIntegerv (GL_VIEWPORT, viewport);
   GLuint width  = viewport[2];
   GLuint height = viewport[3];
 
-  if (vu->buttons & (1 << GLUT_LEFT_BUTTON))
-  {
-    if (vu->modifiers & GLUT_ACTIVE_SHIFT) {
-      /* adjust contrast/gamma */
-      demo_view_scale_gamma_adjust (vu, 1 - ((y - vu->lasty) / height));
-      demo_view_scale_contrast (vu, 1 + ((x - vu->lastx) / width));
-    } else {
-      /* translate */
-      demo_view_translate (vu,
-			   +2 * (x - vu->lastx) / width,
-			   -2 * (y - vu->lasty) / height);
-    }
-  }
+//  if (vu->buttons & (1 << GLUT_LEFT_BUTTON))
+//  {
+//    if (vu->modifiers & GLUT_ACTIVE_SHIFT) {
+//      /* adjust contrast/gamma */
+//      demo_view_scale_gamma_adjust (vu, 1 - ((y - vu->lasty) / height));
+//      demo_view_scale_contrast (vu, 1 + ((x - vu->lastx) / width));
+//    } else {
+//      /* translate */
+//      demo_view_translate (vu,
+//			   +2 * (x - vu->lastx) / width,
+//			   -2 * (y - vu->lasty) / height);
+//    }
+//  }
 
-  if (vu->buttons & (1 << GLUT_RIGHT_BUTTON))
-  {
-    if (vu->modifiers & GLUT_ACTIVE_SHIFT) {
-      /* adjust perspective */
-      demo_view_scale_perspective (vu, 1 - ((y - vu->lasty) / height) * 5);
-    } else {
-      /* rotate */
-      float dquat[4];
-      trackball (dquat,
-		 (2.0*vu->lastx -         width) / width,
-		 (       height - 2.0*vu->lasty) / height,
-		 (        2.0*x -         width) / width,
-		 (       height -         2.0*y) / height );
+//  if (vu->buttons & (1 << GLUT_RIGHT_BUTTON))
+//  {
+//    if (vu->modifiers & GLUT_ACTIVE_SHIFT) {
+//      /* adjust perspective */
+//      demo_view_scale_perspective (vu, 1 - ((y - vu->lasty) / height) * 5);
+//    } else {
+//      /* rotate */
+//      float dquat[4];
+//      trackball (dquat,
+//		 (2.0*vu->lastx -         width) / width,
+//		 (       height - 2.0*vu->lasty) / height,
+//		 (        2.0*x -         width) / width,
+//		 (       height -         2.0*y) / height );
 
-      vu->dx = x - vu->lastx;
-      vu->dy = y - vu->lasty;
-      vu->dt = current_time () - vu->lastt;
+//      vu->dx = x - vu->lastx;
+//      vu->dy = y - vu->lasty;
+//      vu->dt = current_time () - vu->lastt;
 
-      add_quats (dquat, vu->quat, vu->quat);
+//      add_quats (dquat, vu->quat, vu->quat);
 
-      if (vu->dt) {
-        vcopy (dquat, vu->rot_axis);
-	vnormal (vu->rot_axis);
-	vu->rot_speed = 2 * acos (dquat[3]) / vu->dt;
-      }
-    }
-  }
+//      if (vu->dt) {
+//        vcopy (dquat, vu->rot_axis);
+//	vnormal (vu->rot_axis);
+//	vu->rot_speed = 2 * acos (dquat[3]) / vu->dt;
+//      }
+//    }
+//  }
 
-  if (vu->buttons & (1 << GLUT_MIDDLE_BUTTON))
-  {
-    /* scale */
-    double factor = 1 - ((y - vu->lasty) / height) * 5;
-    demo_view_scale (vu, factor);
-    /* adjust translate so we scale centered at the drag-begin mouse position */
-    demo_view_translate (vu,
-			 +(2. * vu->beginx / width  - 1) * (1 - factor),
-			 -(2. * vu->beginy / height - 1) * (1 - factor));
-  }
+//  if (vu->buttons & (1 << GLUT_MIDDLE_BUTTON))
+//  {
+//    /* scale */
+//    double factor = 1 - ((y - vu->lasty) / height) * 5;
+//    demo_view_scale (vu, factor);
+//    /* adjust translate so we scale centered at the drag-begin mouse position */
+//    demo_view_translate (vu,
+//			 +(2. * vu->beginx / width  - 1) * (1 - factor),
+//			 -(2. * vu->beginy / height - 1) * (1 - factor));
+//  }
 
-  vu->lastx = x;
-  vu->lasty = y;
-  vu->lastt = current_time ();
+//  vu->lastx = x;
+//  vu->lasty = y;
+//  vu->lastt = current_time ();
 
-  glutPostRedisplay ();
+//  glutPostRedisplay ();
 }
 
 void
 demo_view_print_help (demo_view_t *vu)
 {
-  LOGI ("Welcome to GLyphy demo\n");
+  LOGI ("Welcome to GLyphy demo");
 }
 
 
@@ -607,14 +592,14 @@ advance_frame (demo_view_t *vu, long dtime)
 }
 
 void
-demo_view_display (demo_view_t *vu, demo_buffer_t *buffer)
+demo_view_display (QOpenGLFunctions * gl, demo_view_t *vu, demo_buffer_t *buffer)
 {
   long new_time = current_time ();
   advance_frame (vu, new_time - vu->last_frame_time);
   vu->last_frame_time = new_time;
 
   int viewport[4];
-  glGetIntegerv (GL_VIEWPORT, viewport);
+  gl->glGetIntegerv (GL_VIEWPORT, viewport);
   GLint width  = viewport[2];
   GLint height = viewport[3];
 
@@ -623,7 +608,7 @@ demo_view_display (demo_view_t *vu, demo_buffer_t *buffer)
 
   m4LoadIdentity (mat);
 
-  demo_view_apply_transform (vu, mat);
+  demo_view_apply_transform (gl, vu, mat);
 
   // Buffer best-fit
   glyphy_extents_t extents;
@@ -636,22 +621,20 @@ demo_view_display (demo_view_t *vu, demo_buffer_t *buffer)
 	       -(extents.max_x + extents.min_x) / 2.,
 	       -(extents.max_y + extents.min_y) / 2., 0);
 
-  demo_glstate_set_matrix (vu->st, mat);
+  demo_glstate_set_matrix (gl, vu->st, mat);
 
-  glClearColor (1, 1, 1, 1);
-  glClear (GL_COLOR_BUFFER_BIT);
+  gl->glClearColor (1, 1, 1, 1);
+  gl->glClear (GL_COLOR_BUFFER_BIT);
 
-  demo_buffer_draw (buffer);
-
-  glutSwapBuffers ();
+  demo_buffer_draw (gl, buffer);
 }
 
 void
-demo_view_setup (demo_view_t *vu)
+demo_view_setup (QOpenGLFunctions * gl, demo_view_t *vu)
 {
   if (!vu->vsync)
     demo_view_toggle_vsync (vu);
   if (!vu->srgb)
     demo_view_toggle_srgb (vu);
-  demo_glstate_setup (vu->st);
+  demo_glstate_setup (gl, vu->st);
 }

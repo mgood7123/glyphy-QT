@@ -52,13 +52,13 @@ demo_buffer_current_point (demo_buffer_t  *buffer,
 			   glyphy_point_t *p);
 
 void
-demo_buffer_add_text (demo_buffer_t        *buffer,
+demo_buffer_add_text (QOpenGLFunctions * gl, demo_buffer_t        *buffer,
 		      const char           *utf8,
 		      demo_font_t          *font,
 		      double                font_size);
 
 void
-demo_buffer_draw (demo_buffer_t *buffer);
+demo_buffer_draw (QOpenGLFunctions * gl, demo_buffer_t *buffer);
 
 
 #endif /* DEMO_BUFFER_H */

@@ -74,13 +74,13 @@ demo_font_reference (demo_font_t *font)
 }
 
 void
-demo_font_destroy (demo_font_t *font)
+demo_font_destroy (QOpenGLFunctions * gl, demo_font_t *font)
 {
   if (!font || --font->refcount)
     return;
 
   glyphy_arc_accumulator_destroy (font->acc);
-  demo_atlas_destroy (font->atlas);
+  demo_atlas_destroy (gl, font->atlas);
   delete font->glyph_cache;
   free (font);
 }
@@ -208,7 +208,7 @@ encode_ft_glyph (demo_font_t      *font,
 }
 
 static void
-_demo_font_upload_glyph (demo_font_t *font,
+_demo_font_upload_glyph (QOpenGLFunctions * gl, demo_font_t *font,
 			 unsigned int glyph_index,
 			 glyph_info_t *glyph_info)
 {
@@ -227,17 +227,17 @@ _demo_font_upload_glyph (demo_font_t *font,
 
   glyph_info->is_empty = glyphy_extents_is_empty (&glyph_info->extents);
   if (!glyph_info->is_empty)
-    demo_atlas_alloc (font->atlas, buffer, output_len,
+    demo_atlas_alloc (gl, font->atlas, buffer, output_len,
 		      &glyph_info->atlas_x, &glyph_info->atlas_y);
 }
 
 void
-demo_font_lookup_glyph (demo_font_t  *font,
+demo_font_lookup_glyph (QOpenGLFunctions * gl, demo_font_t  *font,
 			unsigned int  glyph_index,
 			glyph_info_t *glyph_info)
 {
   if (font->glyph_cache->find (glyph_index) == font->glyph_cache->end ()) {
-    _demo_font_upload_glyph (font, glyph_index, glyph_info);
+    _demo_font_upload_glyph (gl, font, glyph_index, glyph_info);
     (*font->glyph_cache)[glyph_index] = *glyph_info;
   } else
     *glyph_info = (*font->glyph_cache)[glyph_index];

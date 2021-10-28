@@ -39,7 +39,7 @@ void
 demo_view_reset (demo_view_t *vu);
 
 void
-demo_view_reshape_func (demo_view_t *vu, int width, int height);
+demo_view_reshape_func (QOpenGLFunctions * gl, demo_view_t *vu, int width, int height);
 
 void
 demo_view_keyboard_func (demo_view_t *vu, unsigned char key, int x, int y);
@@ -57,10 +57,10 @@ void
 demo_view_print_help (demo_view_t *vu);
 
 void
-demo_view_display (demo_view_t *vu, demo_buffer_t *buffer);
+demo_view_display (QOpenGLFunctions * gl, demo_view_t *vu, demo_buffer_t *buffer);
 
 void
-demo_view_setup (demo_view_t *vu);
+demo_view_setup (QOpenGLFunctions * gl, demo_view_t *vu);
 
 
 #endif /* DEMO_VIEW_H */

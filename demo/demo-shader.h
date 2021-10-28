@@ -41,7 +41,7 @@ demo_shader_add_glyph_vertices (const glyphy_point_t        &p,
 
 
 GLuint
-demo_shader_create_program (void);
+demo_shader_create_program (QOpenGLFunctions * gl);
 
 
 #endif /* DEMO_SHADERS_H */

@@ -101,7 +101,7 @@ demo_buffer_current_point (demo_buffer_t  *buffer,
 }
 
 void
-demo_buffer_add_text (demo_buffer_t        *buffer,
+demo_buffer_add_text (QOpenGLFunctions * gl, demo_buffer_t        *buffer,
 		      const char           *utf8,
 		      demo_font_t          *font,
 		      double                font_size)
@@ -140,7 +140,7 @@ demo_buffer_add_text (demo_buffer_t        *buffer,
 
     unsigned int glyph_index = FT_Get_Char_Index (face, unicode);
     glyph_info_t gi;
-    demo_font_lookup_glyph (font, glyph_index, &gi);
+    demo_font_lookup_glyph (gl, font, glyph_index, &gi);
 
     /* Update ink extents */
     glyphy_extents_t ink_extents;
@@ -163,18 +163,18 @@ demo_buffer_add_text (demo_buffer_t        *buffer,
 }
 
 void
-demo_buffer_draw (demo_buffer_t *buffer)
+demo_buffer_draw (QOpenGLFunctions * gl, demo_buffer_t *buffer)
 {
   GLint program;
-  glGetIntegerv (GL_CURRENT_PROGRAM, &program);
-  GLuint a_glyph_vertex_loc = glGetAttribLocation (program, "a_glyph_vertex");
-  glBindBuffer (GL_ARRAY_BUFFER, buffer->buf_name);
+  gl->glGetIntegerv (GL_CURRENT_PROGRAM, &program);
+  GLuint a_glyph_vertex_loc = gl->glGetAttribLocation (program, "a_glyph_vertex");
+  gl->glBindBuffer (GL_ARRAY_BUFFER, buffer->buf_name);
   if (buffer->dirty) {
-    glBufferData (GL_ARRAY_BUFFER,  sizeof (glyph_vertex_t) * buffer->vertices->size (), (const char *) &(*buffer->vertices)[0], GL_STATIC_DRAW);
+    gl->glBufferData (GL_ARRAY_BUFFER,  sizeof (glyph_vertex_t) * buffer->vertices->size (), (const char *) &(*buffer->vertices)[0], GL_STATIC_DRAW);
     buffer->dirty = false;
   }
-  glEnableVertexAttribArray (a_glyph_vertex_loc);
-  glVertexAttribPointer (a_glyph_vertex_loc, 4, GL_FLOAT, GL_FALSE, sizeof (glyph_vertex_t), 0);
-  glDrawArrays (GL_TRIANGLES, 0, buffer->vertices->size ());
-  glDisableVertexAttribArray (a_glyph_vertex_loc);
+  gl->glEnableVertexAttribArray (a_glyph_vertex_loc);
+  gl->glVertexAttribPointer (a_glyph_vertex_loc, 4, GL_FLOAT, GL_FALSE, sizeof (glyph_vertex_t), 0);
+  gl->glDrawArrays (GL_TRIANGLES, 0, buffer->vertices->size ());
+  gl->glDisableVertexAttribArray (a_glyph_vertex_loc);
 }
