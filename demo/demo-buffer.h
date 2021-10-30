@@ -26,13 +26,13 @@
 typedef struct demo_buffer_t demo_buffer_t;
 
 demo_buffer_t *
-demo_buffer_create (QOpenGLFunctions * gl);
+demo_buffer_create (QOpenGLExtraFunctions * gl);
 
 demo_buffer_t *
 demo_buffer_reference (demo_buffer_t *buffer);
 
 void
-demo_buffer_destroy (QOpenGLFunctions * gl, demo_buffer_t *buffer);
+demo_buffer_destroy (QOpenGLExtraFunctions * gl, demo_buffer_t *buffer);
 
 
 void
@@ -52,13 +52,13 @@ demo_buffer_current_point (demo_buffer_t  *buffer,
 			   glyphy_point_t *p);
 
 void
-demo_buffer_add_text (QOpenGLFunctions * gl, demo_buffer_t        *buffer,
+demo_buffer_add_text (QOpenGLExtraFunctions * gl, demo_buffer_t        *buffer,
 		      const char           *utf8,
 		      demo_font_t          *font,
 		      double                font_size);
 
 void
-demo_buffer_draw (QOpenGLFunctions * gl, demo_buffer_t *buffer);
+demo_buffer_draw (QOpenGLExtraFunctions * gl, demo_buffer_t *buffer);
 
 
 #endif /* DEMO_BUFFER_H */

@@ -74,7 +74,7 @@ demo_font_reference (demo_font_t *font)
 }
 
 void
-demo_font_destroy (QOpenGLFunctions * gl, demo_font_t *font)
+demo_font_destroy (QOpenGLExtraFunctions * gl, demo_font_t *font)
 {
   if (!font || --font->refcount)
     return;
@@ -208,7 +208,7 @@ encode_ft_glyph (demo_font_t      *font,
 }
 
 static void
-_demo_font_upload_glyph (QOpenGLFunctions * gl, demo_font_t *font,
+_demo_font_upload_glyph (QOpenGLExtraFunctions * gl, demo_font_t *font,
 			 unsigned int glyph_index,
 			 glyph_info_t *glyph_info)
 {
@@ -232,7 +232,7 @@ _demo_font_upload_glyph (QOpenGLFunctions * gl, demo_font_t *font,
 }
 
 void
-demo_font_lookup_glyph (QOpenGLFunctions * gl, demo_font_t  *font,
+demo_font_lookup_glyph (QOpenGLExtraFunctions * gl, demo_font_t  *font,
 			unsigned int  glyph_index,
 			glyph_info_t *glyph_info)
 {

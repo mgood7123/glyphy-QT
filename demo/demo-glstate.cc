@@ -38,7 +38,7 @@ struct demo_glstate_t {
 };
 
 demo_glstate_t *
-demo_glstate_create (QOpenGLFunctions * gl)
+demo_glstate_create (QOpenGLExtraFunctions * gl)
 {
   TRACE();
 
@@ -66,7 +66,7 @@ demo_glstate_reference (demo_glstate_t *st)
 }
 
 void
-demo_glstate_destroy (QOpenGLFunctions * gl, demo_glstate_t *st)
+demo_glstate_destroy (QOpenGLExtraFunctions * gl, demo_glstate_t *st)
 {
   if (!st || --st->refcount)
     return;
@@ -79,7 +79,7 @@ demo_glstate_destroy (QOpenGLFunctions * gl, demo_glstate_t *st)
 
 
 static void
-set_uniform (QOpenGLFunctions * gl, GLuint program, const char *name, double *p, double value)
+set_uniform (QOpenGLExtraFunctions * gl, GLuint program, const char *name, double *p, double value)
 {
   *p = value;
   gl->glUniform1f (gl->glGetUniformLocation (program, name), value);
@@ -89,9 +89,8 @@ set_uniform (QOpenGLFunctions * gl, GLuint program, const char *name, double *p,
 #define SET_UNIFORM(gl, name, value) set_uniform (gl, st->program, #name, &st->name, value)
 
 void
-demo_glstate_setup (QOpenGLFunctions * gl, demo_glstate_t *st)
+demo_glstate_setup (QOpenGLExtraFunctions * gl, demo_glstate_t *st)
 {
-  st->u_debug = true;
   gl->glUseProgram (st->program);
 
   demo_atlas_set_uniforms (gl, st->atlas);
@@ -114,43 +113,43 @@ demo_glstate_get_atlas (demo_glstate_t *st)
 }
 
 void
-demo_glstate_scale_gamma_adjust (QOpenGLFunctions * gl, demo_glstate_t *st, double factor)
+demo_glstate_scale_gamma_adjust (QOpenGLExtraFunctions * gl, demo_glstate_t *st, double factor)
 {
   SET_UNIFORM (gl, u_gamma_adjust, clamp (st->u_gamma_adjust * factor, .1, 10.));
 }
 
 void
-demo_glstate_scale_contrast (QOpenGLFunctions * gl, demo_glstate_t *st, double factor)
+demo_glstate_scale_contrast (QOpenGLExtraFunctions * gl, demo_glstate_t *st, double factor)
 {
   SET_UNIFORM (gl, u_contrast, clamp (st->u_contrast * factor, .1, 10.));
 }
 
 void
-demo_glstate_toggle_debug (QOpenGLFunctions * gl, demo_glstate_t *st)
+demo_glstate_toggle_debug (QOpenGLExtraFunctions * gl, demo_glstate_t *st)
 {
   SET_UNIFORM (gl, u_debug, 1 - st->u_debug);
 }
 
 void
-demo_glstate_set_matrix (QOpenGLFunctions * gl, demo_glstate_t *st, float mat[16])
+demo_glstate_set_matrix (QOpenGLExtraFunctions * gl, demo_glstate_t *st, float mat[16])
 {
   gl->glUniformMatrix4fv (gl->glGetUniformLocation (st->program, "u_matViewProjection"), 1, GL_FALSE, mat);
 }
 
 void
-demo_glstate_toggle_outline (QOpenGLFunctions * gl, demo_glstate_t *st)
+demo_glstate_toggle_outline (QOpenGLExtraFunctions * gl, demo_glstate_t *st)
 {
   SET_UNIFORM (gl, u_outline, 1 - st->u_outline);
 }
 
 void
-demo_glstate_scale_outline_thickness (QOpenGLFunctions * gl, demo_glstate_t *st, double factor)
+demo_glstate_scale_outline_thickness (QOpenGLExtraFunctions * gl, demo_glstate_t *st, double factor)
 {
   SET_UNIFORM (gl, u_outline_thickness, clamp (st->u_outline_thickness * factor, .5, 3.));
 }
 
 void
-demo_glstate_adjust_boldness (QOpenGLFunctions * gl, demo_glstate_t *st, double adjustment)
+demo_glstate_adjust_boldness (QOpenGLExtraFunctions * gl, demo_glstate_t *st, double adjustment)
 {
   SET_UNIFORM (gl, u_boldness, clamp (st->u_boldness + adjustment, -.2, .7));
 }

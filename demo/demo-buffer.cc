@@ -34,7 +34,7 @@ struct demo_buffer_t {
 };
 
 demo_buffer_t *
-demo_buffer_create (QOpenGLFunctions * gl)
+demo_buffer_create (QOpenGLExtraFunctions * gl)
 {
   demo_buffer_t *buffer = (demo_buffer_t *) calloc (1, sizeof (demo_buffer_t));
   buffer->refcount = 1;
@@ -55,7 +55,7 @@ demo_buffer_reference (demo_buffer_t *buffer)
 }
 
 void
-demo_buffer_destroy (QOpenGLFunctions * gl, demo_buffer_t *buffer)
+demo_buffer_destroy (QOpenGLExtraFunctions * gl, demo_buffer_t *buffer)
 {
   if (!buffer || --buffer->refcount)
     return;
@@ -101,7 +101,7 @@ demo_buffer_current_point (demo_buffer_t  *buffer,
 }
 
 void
-demo_buffer_add_text (QOpenGLFunctions * gl, demo_buffer_t        *buffer,
+demo_buffer_add_text (QOpenGLExtraFunctions * gl, demo_buffer_t        *buffer,
 		      const char           *utf8,
 		      demo_font_t          *font,
 		      double                font_size)
@@ -109,7 +109,7 @@ demo_buffer_add_text (QOpenGLFunctions * gl, demo_buffer_t        *buffer,
   FT_Face face = demo_font_get_face (font);
   glyphy_point_t top_left = buffer->cursor;
   buffer->cursor.y += font_size /* * font->ascent */;
-  unsigned int unicode;
+  unsigned int unicode = 0;
   for (const unsigned char *p = (const unsigned char *) utf8; *p; p++) {
     if (*p < 128) {
       unicode = *p;
@@ -163,18 +163,19 @@ demo_buffer_add_text (QOpenGLFunctions * gl, demo_buffer_t        *buffer,
 }
 
 void
-demo_buffer_draw (QOpenGLFunctions * gl, demo_buffer_t *buffer)
+demo_buffer_draw (QOpenGLExtraFunctions * gl, demo_buffer_t *buffer)
 {
-  GLint program;
-  gl->glGetIntegerv (GL_CURRENT_PROGRAM, &program);
-  GLuint a_glyph_vertex_loc = gl->glGetAttribLocation (program, "a_glyph_vertex");
+  GLuint vao;
+  gl->glGenVertexArrays(1, &vao);
+  gl->glBindVertexArray(vao);
   gl->glBindBuffer (GL_ARRAY_BUFFER, buffer->buf_name);
   if (buffer->dirty) {
     gl->glBufferData (GL_ARRAY_BUFFER,  sizeof (glyph_vertex_t) * buffer->vertices->size (), (const char *) &(*buffer->vertices)[0], GL_STATIC_DRAW);
     buffer->dirty = false;
   }
-  gl->glEnableVertexAttribArray (a_glyph_vertex_loc);
-  gl->glVertexAttribPointer (a_glyph_vertex_loc, 4, GL_FLOAT, GL_FALSE, sizeof (glyph_vertex_t), 0);
+  gl->glEnableVertexAttribArray (0);
+  gl->glVertexAttribPointer (0, 4, GL_FLOAT, GL_FALSE, sizeof (glyph_vertex_t), 0);
   gl->glDrawArrays (GL_TRIANGLES, 0, buffer->vertices->size ());
-  gl->glDisableVertexAttribArray (a_glyph_vertex_loc);
+  gl->glDisableVertexAttribArray (0);
+  gl->glDeleteVertexArrays(1, &vao);
 }

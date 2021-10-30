@@ -108,7 +108,7 @@ demo_shader_add_glyph_vertices (const glyphy_point_t        &p,
 
 
 static GLuint
-compile_shader (QOpenGLFunctions * gl, GLenum         type,
+compile_shader (QOpenGLExtraFunctions * gl, GLenum         type,
 		GLsizei        count,
 		const GLchar** sources)
 {
@@ -142,14 +142,14 @@ compile_shader (QOpenGLFunctions * gl, GLenum         type,
          type == GL_VERTEX_SHADER ? "Vertex" : "Fragment", i, sources[i]);
     }
 
-    abort ();
+    qFatal("aborted");
   }
 
   return shader;
 }
 
 static GLuint
-link_program (QOpenGLFunctions * gl, GLuint vshader,
+link_program (QOpenGLExtraFunctions * gl, GLuint vshader,
 	      GLuint fshader)
 {
   TRACE();
@@ -184,13 +184,19 @@ link_program (QOpenGLFunctions * gl, GLuint vshader,
   return program;
 }
 
+#ifdef GL_ES_VERSION_2_0
 # define GLSL_HEADER_STRING \
-  "#version 330 core\n" \
+  "#version 320 es\n" \
+  "#extension GL_OES_standard_derivatives : enable\n" \
   "precision highp float;\n" \
   "precision highp int;\n"
+#else
+# define GLSL_HEADER_STRING \
+  "#version 330 core\n"
+#endif
 
 GLuint
-demo_shader_create_program (QOpenGLFunctions * gl)
+demo_shader_create_program (QOpenGLExtraFunctions * gl)
 {
   TRACE();
 

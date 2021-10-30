@@ -38,7 +38,7 @@ struct demo_atlas_t {
 
 
 demo_atlas_t *
-demo_atlas_create (QOpenGLFunctions * gl, unsigned int w,
+demo_atlas_create (QOpenGLExtraFunctions * gl, unsigned int w,
 		   unsigned int h,
 		   unsigned int item_w,
 		   unsigned int item_h_quantum)
@@ -75,7 +75,7 @@ demo_atlas_reference (demo_atlas_t *at)
 }
 
 void
-demo_atlas_destroy (QOpenGLFunctions * gl, demo_atlas_t *at)
+demo_atlas_destroy (QOpenGLExtraFunctions * gl, demo_atlas_t *at)
 {
   if (!at || --at->refcount)
     return;
@@ -85,14 +85,14 @@ demo_atlas_destroy (QOpenGLFunctions * gl, demo_atlas_t *at)
 }
 
 void
-demo_atlas_bind_texture (QOpenGLFunctions * gl, demo_atlas_t *at)
+demo_atlas_bind_texture (QOpenGLExtraFunctions * gl, demo_atlas_t *at)
 {
   gl->glActiveTexture (at->tex_unit);
   gl->glBindTexture (GL_TEXTURE_2D, at->tex_name);
 }
 
 void
-demo_atlas_set_uniforms (QOpenGLFunctions * gl, demo_atlas_t *at)
+demo_atlas_set_uniforms (QOpenGLExtraFunctions * gl, demo_atlas_t *at)
 {
   GLuint program;
   gl->glGetIntegerv (GL_CURRENT_PROGRAM, (GLint *) &program);
@@ -103,7 +103,7 @@ demo_atlas_set_uniforms (QOpenGLFunctions * gl, demo_atlas_t *at)
 }
 
 void
-demo_atlas_alloc (QOpenGLFunctions * gl, demo_atlas_t  *at,
+demo_atlas_alloc (QOpenGLExtraFunctions * gl, demo_atlas_t  *at,
 		  glyphy_rgba_t *data,
 		  unsigned int   len,
 		  unsigned int  *px,

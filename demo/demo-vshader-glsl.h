@@ -1,7 +1,7 @@
 static const char *demo_vshader_glsl =
 "uniform mat4 u_matViewProjection;\n"
 "\n"
-"in vec4 a_glyph_vertex;\n"
+"layout (location = 0) in vec4 a_glyph_vertex;\n"
 "\n"
 "out vec4 v_glyph;\n"
 "\n"

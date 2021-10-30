@@ -125,13 +125,13 @@ demo_view_reset (demo_view_t *vu)
 
 
 static void
-demo_view_scale_gamma_adjust (QOpenGLFunctions * gl, demo_view_t *vu, double factor)
+demo_view_scale_gamma_adjust (QOpenGLExtraFunctions * gl, demo_view_t *vu, double factor)
 {
   demo_glstate_scale_gamma_adjust (gl, vu->st, factor);
 }
 
 static void
-demo_view_scale_contrast (QOpenGLFunctions * gl, demo_view_t *vu, double factor)
+demo_view_scale_contrast (QOpenGLExtraFunctions * gl, demo_view_t *vu, double factor)
 {
   demo_glstate_scale_contrast (gl, vu->st, factor);
 }
@@ -143,20 +143,20 @@ demo_view_scale_perspective (demo_view_t *vu, double factor)
 }
 
 static void
-demo_view_toggle_outline (QOpenGLFunctions * gl, demo_view_t *vu)
+demo_view_toggle_outline (QOpenGLExtraFunctions * gl, demo_view_t *vu)
 {
   demo_glstate_toggle_outline (gl, vu->st);
 }
 
 static void
-demo_view_scale_outline_thickness (QOpenGLFunctions * gl, demo_view_t *vu, double factor)
+demo_view_scale_outline_thickness (QOpenGLExtraFunctions * gl, demo_view_t *vu, double factor)
 {
   demo_glstate_scale_outline_thickness (gl, vu->st, factor);
 }
 
 
 static void
-demo_view_adjust_boldness (QOpenGLFunctions * gl, demo_view_t *vu, double factor)
+demo_view_adjust_boldness (QOpenGLExtraFunctions * gl, demo_view_t *vu, double factor)
 {
   demo_glstate_adjust_boldness (gl, vu->st, factor);
 }
@@ -176,7 +176,7 @@ demo_view_translate (demo_view_t *vu, double dx, double dy)
 }
 
 static void
-demo_view_apply_transform (QOpenGLFunctions * gl, demo_view_t *vu, float *mat)
+demo_view_apply_transform (QOpenGLExtraFunctions * gl, demo_view_t *vu, float *mat)
 {
   int viewport[4];
   gl->glGetIntegerv (GL_VIEWPORT, viewport);
@@ -319,14 +319,14 @@ demo_view_toggle_fullscreen (demo_view_t *vu)
 }
 
 static void
-demo_view_toggle_debug (QOpenGLFunctions * gl, demo_view_t *vu)
+demo_view_toggle_debug (QOpenGLExtraFunctions * gl, demo_view_t *vu)
 {
   demo_glstate_toggle_debug (gl, vu->st);
 }
 
 
 void
-demo_view_reshape_func (QOpenGLFunctions * gl, demo_view_t *vu, int width, int height)
+demo_view_reshape_func (QOpenGLExtraFunctions * gl, demo_view_t *vu, int width, int height)
 {
   gl->glViewport (0, 0, width, height);
 //  glutPostRedisplay ();
@@ -334,111 +334,87 @@ demo_view_reshape_func (QOpenGLFunctions * gl, demo_view_t *vu, int width, int h
 
 #define STEP 1.05
 void
-demo_view_keyboard_func (QOpenGLFunctions * gl, demo_view_t *vu, unsigned char key, int x, int y)
+demo_view_keyboard_func (QOpenGLExtraFunctions * gl, demo_view_t *vu, int key)
 {
   switch (key)
   {
-    case '\033':
-    case 'q':
-      exit (0);
+    case Qt::Key::Key_Escape:
+    case Qt::Key::Key_Q:
+      QGuiApplication::exit(0);
       break;
 
-    case ' ':
+    case Qt::Key::Key_Space:
       demo_view_toggle_animation (vu);
       break;
-    case 'v':
+    case Qt::Key::Key_V:
       demo_view_toggle_vsync (vu);
       break;
 
-    case 'f':
+    case Qt::Key::Key_F:
       demo_view_toggle_fullscreen (vu);
       break;
 
-    case 'd':
+    case Qt::Key::Key_D:
       demo_view_toggle_debug (gl, vu);
       break;
 
-    case 'o':
+    case Qt::Key::Key_O:
       demo_view_toggle_outline (gl, vu);
       break;
-    case 'p':
+    case Qt::Key::Key_P:
       demo_view_scale_outline_thickness (gl, vu, STEP);
       break;
-    case 'i':
+    case Qt::Key::Key_I:
       demo_view_scale_outline_thickness (gl, vu, 1. / STEP);
       break;
 
-    case '0':
+    case Qt::Key::Key_0:
       demo_view_adjust_boldness (gl, vu, +.01);
       break;
-    case '9':
+    case Qt::Key::Key_9:
       demo_view_adjust_boldness (gl, vu, -.01);
       break;
 
 
-    case 'a':
+    case Qt::Key::Key_A:
       demo_view_scale_contrast (gl, vu, STEP);
       break;
-    case 'z':
+    case Qt::Key::Key_Z:
       demo_view_scale_contrast (gl, vu, 1. / STEP);
       break;
-    case 'g':
+    case Qt::Key::Key_G:
       demo_view_scale_gamma_adjust (gl, vu, STEP);
       break;
-    case 'b':
+    case Qt::Key::Key_B:
       demo_view_scale_gamma_adjust (gl, vu, 1. / STEP);
       break;
-    case 'c':
+    case Qt::Key::Key_C:
       demo_view_toggle_srgb (vu);
       break;
 
-    case '=':
+    case Qt::Key::Key_Equal:
       demo_view_scale (vu, STEP);
       break;
-    case '-':
+    case Qt::Key::Key_Minus:
       demo_view_scale (vu, 1. / STEP);
       break;
 
-    case 'k':
-      demo_view_translate (vu, 0, -.1);
-      break;
-    case 'j':
-      demo_view_translate (vu, 0, +.1);
-      break;
-    case 'h':
-      demo_view_translate (vu, +.1, 0);
-      break;
-    case 'l':
-      demo_view_translate (vu, -.1, 0);
-      break;
-
-    case 'r':
+    case Qt::Key::Key_R:
       demo_view_reset (vu);
       break;
 
-    default:
-      return;
-  }
-//  glutPostRedisplay ();
-}
-
-void
-demo_view_special_func (demo_view_t *vu, int key, int x, int y)
-{
-  switch (key)
-  {
-//    case GLUT_KEY_UP:
-//      demo_view_translate (vu, 0, -.1);
-//      break;
-//    case GLUT_KEY_DOWN:
-//      demo_view_translate (vu, 0, +.1);
-//      break;
-//    case GLUT_KEY_LEFT:
-//      demo_view_translate (vu, +.1, 0);
-//      break;
-//    case GLUT_KEY_RIGHT:
-//      demo_view_translate (vu, -.1, 0);
-//      break;
+    case Qt::Key::Key_Down:
+      demo_view_translate (vu, 0, -.1);
+      break;
+    case Qt::Key::Key_Up:
+      demo_view_translate (vu, 0, +.1);
+      break;
+    case Qt::Key::Key_Right:
+      demo_view_translate (vu, +.1, 0);
+      break;
+    case Qt::Key::Key_Left:
+      demo_view_translate (vu, -.1, 0);
+      break;
 
     default:
       return;
@@ -504,7 +480,7 @@ demo_view_mouse_func (demo_view_t *vu, int button, int state, int x, int y)
 }
 
 void
-demo_view_motion_func (QOpenGLFunctions * gl, demo_view_t *vu, int x, int y)
+demo_view_motion_func (QOpenGLExtraFunctions * gl, demo_view_t *vu, int x, int y)
 {
   vu->dragged = true;
 
@@ -592,7 +568,7 @@ advance_frame (demo_view_t *vu, long dtime)
 }
 
 void
-demo_view_display (QOpenGLFunctions * gl, demo_view_t *vu, demo_buffer_t *buffer)
+demo_view_display (QOpenGLExtraFunctions * gl, demo_view_t *vu, demo_buffer_t *buffer)
 {
   long new_time = current_time ();
   advance_frame (vu, new_time - vu->last_frame_time);
@@ -630,7 +606,7 @@ demo_view_display (QOpenGLFunctions * gl, demo_view_t *vu, demo_buffer_t *buffer
 }
 
 void
-demo_view_setup (QOpenGLFunctions * gl, demo_view_t *vu)
+demo_view_setup (QOpenGLExtraFunctions * gl, demo_view_t *vu)
 {
   if (!vu->vsync)
     demo_view_toggle_vsync (vu);

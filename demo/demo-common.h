@@ -31,7 +31,9 @@
 #include <vector>
 
 #include <QtOpenGL>
-#include <QOpenGLFunctions>
+#include <QOpenGLExtraFunctions>
+#include <QKeyEvent>
+#include <QMouseEvent>
 
 /* Logging. */
 #define LOGI(...) ((void) qDebug (__VA_ARGS__))

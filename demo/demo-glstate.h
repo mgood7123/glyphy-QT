@@ -28,41 +28,41 @@
 typedef struct demo_glstate_t demo_glstate_t;
 
 demo_glstate_t *
-demo_glstate_create (QOpenGLFunctions * gl);
+demo_glstate_create (QOpenGLExtraFunctions * gl);
 
 demo_glstate_t *
 demo_glstate_reference (demo_glstate_t *st);
 
 void
-demo_glstate_destroy (QOpenGLFunctions * gl, demo_glstate_t *st);
+demo_glstate_destroy (QOpenGLExtraFunctions * gl, demo_glstate_t *st);
 
 
 void
-demo_glstate_setup (QOpenGLFunctions * gl, demo_glstate_t *st);
+demo_glstate_setup (QOpenGLExtraFunctions * gl, demo_glstate_t *st);
 
 demo_atlas_t *
 demo_glstate_get_atlas (demo_glstate_t *st);
 
 void
-demo_glstate_scale_gamma_adjust (QOpenGLFunctions * gl, demo_glstate_t *st, double factor);
+demo_glstate_scale_gamma_adjust (QOpenGLExtraFunctions * gl, demo_glstate_t *st, double factor);
 
 void
-demo_glstate_scale_contrast (QOpenGLFunctions * gl, demo_glstate_t *st, double factor);
+demo_glstate_scale_contrast (QOpenGLExtraFunctions * gl, demo_glstate_t *st, double factor);
 
 void
-demo_glstate_toggle_debug (QOpenGLFunctions * gl, demo_glstate_t *st);
+demo_glstate_toggle_debug (QOpenGLExtraFunctions * gl, demo_glstate_t *st);
 
 void
-demo_glstate_set_matrix (QOpenGLFunctions * gl, demo_glstate_t *st, float mat[16]);
+demo_glstate_set_matrix (QOpenGLExtraFunctions * gl, demo_glstate_t *st, float mat[16]);
 
 void
-demo_glstate_toggle_outline (QOpenGLFunctions * gl, demo_glstate_t *st);
+demo_glstate_toggle_outline (QOpenGLExtraFunctions * gl, demo_glstate_t *st);
 
 void
-demo_glstate_scale_outline_thickness (QOpenGLFunctions * gl, demo_glstate_t *st, double factor);
+demo_glstate_scale_outline_thickness (QOpenGLExtraFunctions * gl, demo_glstate_t *st, double factor);
 
 void
-demo_glstate_adjust_boldness (QOpenGLFunctions * gl, demo_glstate_t *st, double adjustment);
+demo_glstate_adjust_boldness (QOpenGLExtraFunctions * gl, demo_glstate_t *st, double adjustment);
 
 
 #endif /* DEMO_GLSTATE_H */
