@@ -5,7 +5,10 @@ project(FTGL LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-#include_directories(include)
+set(CMAKE_AUTOUIC OFF)
+set(CMAKE_AUTOMOC OFF)
+set(CMAKE_AUTORCC OFF)
+
 include_directories(src)
 
 add_library(
@@ -20,6 +23,8 @@ add_library(
         src/glyphy-sdf.cc
         src/glyphy-shaders.cc
 )
+
+add_dependencies(glyphy freetype-cmake)
 
 target_link_libraries(
         glyphy
